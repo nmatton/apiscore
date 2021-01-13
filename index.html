@@ -312,7 +312,7 @@ botui.message.add({ // show a message
     }).then(
             botui.message.bot({
               delay: 1500,
-              content: "Vous pouvez !(github) [améliorer le site] sur github, m'offrir !(coffee) [un verre], suggérer une !(lightbulb-o) [idée] ou encore en parler autour de vous :)"
+              content: "Vous pouvez !(github) [améliorer le site](https://github.com/nmatton/apiscore) sur github, m'offrir !(coffee) [un verre](http://paypal.com), suggérer une !(lightbulb-o) [idée] ou encore en parler autour de vous :)"
               })
             );
   } else if (res.value == 'idea') {
@@ -567,7 +567,7 @@ map.on('click', function(e) {
   if (selectedLayer != 0) {
   	jQuery.ajax({
           // fetch data
-          url: "http://locla.be/apiscore/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          url: "static/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
             console.log(data);
@@ -877,7 +877,7 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
   if (selectedLayer != 0) {
     jQuery.ajax({
           // fetch data
-          url: "http://locla.be/apiscore/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          url: "static/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
             console.log(data);
