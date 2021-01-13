@@ -1,0 +1,904 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<title>Apiscore - Quel est votre environnement apicole ?</title>
+<meta content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+
+<script src="https://api.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.3/proj4.js"></script>
+<script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
+<script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+<script src="static/js/chartjs-plugin-colorschemes.js"></script>
+<script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
+<script src="https://cdn.jsdelivr.net/npm/jsframe.js/lib/jsframe.min.js"></script>
+<script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
+<script src="https://unpkg.com/botui/build/botui.min.js"></script>
+
+
+
+<link href="https://api.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.css" rel="stylesheet" />
+<link rel="stylesheet" type="text/css" href="static/css/style.css">
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui.min.css">
+<link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui-theme-default.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
+<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+
+
+
+<style>
+body { margin: 0; padding: 0; }
+#map { position: absolute; top: 0; bottom: 0; width: 100%; }
+</style>
+
+</head>
+<body>
+<div id="map"></div>
+<pre id="info">Apiscore - V0.3b</pre>
+<nav id="menu"></nav>
+<div class='map-overlay' id='legend'></div>
+<div class="waiting"></div>
+<div id="chat-circle" class="btn btn-raised">
+        <div id="chat-overlay"></div>
+        <i class="material-icons">contact_support</i>
+</div>
+<div class="chat-box">
+  <div class="chat-box-header">
+    Question / Commentaire ?
+    <span class="chat-box-toggle"><i class="material-icons">close</i></span>
+  </div>
+  <div class="chat-box-body">
+    <div class="chat-box-overlay">   
+    <div id="my-botui-app">
+      <bot-ui></bot-ui></div>    
+  </div>  
+</div>
+</div>
+<script>
+
+
+// Initiate animation on each ajax request
+$body = $("body");
+$(document).on({
+    ajaxStart: function() { $body.addClass("loading");    },
+    ajaxStop: function() { $body.removeClass("loading"); }    
+});
+
+
+// add botUI interface
+$(function() {
+  var botui = new BotUI('my-botui-app');
+  
+  // START BOTUI pseudo-discussion
+botui.message.add({ // show a message
+  human: false,
+  content: 'Bonjour !'
+}).then(() => {
+  return botui.message.bot({ // second one
+    delay: 500, // wait 1 sec.
+    content: 'Comment puis-je vous aider ?'
+  })
+}).then(function () { 
+      return botui.action.button({ // show 'text' action
+      action: [
+      {
+        text: "J'ai une question !",
+        value: "question"
+      },
+      {
+        text: 'Je veux aider / contribuer !',
+        value: 'contribute'
+      },
+      {
+        text: 'J\'ai une idée / suggestion !',
+        value: 'idea'
+      },
+      {
+        text: 'Je souhaite être tenu informé des nouveautés !',
+        value: 'newslettre'
+      }]}
+  )
+}).then(function (res) {// get the result
+  console.log(res)
+  if (res.value == 'question') {
+    botui.action.button({ // show 'text' action
+      action: [
+      {
+        text: "J'ai besoin d'aide pour utiliser le site",
+        value: "help"
+      },
+      {
+        text: 'J\'ai une question sur les données utilisées',
+        value: 'data'
+      },
+      {
+        text: 'Qui est à l\'origine du site ?',
+        value: 'author'
+      },
+      {
+        text: 'J\'ai une autre question',
+        value: 'other'
+      }]
+    }).then(function(res){
+      if (res.value == 'help'){
+        botui.message.bot({
+            delay: 1000,
+            content: "C'est très simple !"
+        }).then(
+        botui.message.bot({
+            delay: 1500,
+            content: "Je vous affiche la page avec les informations nescessaires !"
+        })
+        ).then(
+        botui.message.bot({
+            delay: 2000,
+            content: "N'hésitez pas si vous avez d'autre questions à me contacter à info@apiscore.be !"
+        })).then(//open welcome modal
+        ); // end of 'help question'
+      } else if (res.value == 'data') {
+        botui.message.bot({
+            delay: 500,
+            content: "Pas de problème"
+        }
+        ).then(
+        botui.message.bot({
+            delay: 1000,
+            content: "Pour info, toutes les données utilisées sont en libre accès"
+        })
+        ).then(
+        botui.message.bot({
+            delay: 2000,
+            content: "Sur quelle données avez vous une question ?"
+        })
+        ).then(
+          function () {
+            return botui.action.button({ 
+            action: [
+            {
+              text: "les écotopes",
+              value: "ecotopes"
+            },
+            {
+              text: 'les parcelles agricoles',
+              value: 'sigec'
+            },
+            {
+              text: 'l\'occupation du sol',
+              value: 'walous'
+            },
+            {
+              text: 'les orthophotos (images aériennes)',
+              value: 'ortho'
+            }]
+          })}).then(function(res){
+            if (res.value == 'ecotopes') {
+              botui.message.bot({
+                  content: "La couche a été créée par l'Univerité Catholique de Louvain"
+              }).then(
+              botui.message.bot({
+                  delay: 500,
+                  content: 'Vous trouverez plus de détails [ici](https://maps.elie.ucl.ac.be/lifewatch/ecotopes.html)'
+              })
+              )
+            } else if (res.value == 'sigec') {
+              botui.message.bot({
+                  delay: 1000,
+                  content: "Il s'agit des parcelles agricoles basées sur la déclaration des agriculteurs"
+              }).then(
+              botui.message.bot({
+                  delay: 500,
+                  content: "La couche actuellement affichée est celle des cultures de 2019"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 500,
+                  content: "Dès que la mise à jour de la couche sera disponnible, elle sera intégrée au site !"
+              })
+              )
+            } else if (res.value == 'walous') {
+              botui.message.bot({
+                  delay: 1000,
+                  loading:true,
+                  content: "La carte d'occupation du sol a été réalisée sur base des données de 2018"
+              }).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "Il s'agit d'un projet initié par le SPW et réalisé par l'UCL, ULB et l'ISSEP"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 2000,
+                  content: "Plus d'informations sont disponnibles [ici](https://geoportail.wallonie.be/walous)"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 2300,
+                  content: "Et le rapport final du projet [ici](https://geoportail.wallonie.be/files/PDF/RA_WALOUS_final_sept20.pdf)"
+              })
+              )
+            } else if (res.value == 'ortho') {
+              botui.message.bot({
+                  delay: 1000,
+                  content: "Il s'agit des images aériennes prises en 2019"
+              }).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "La couche de 2020 est disponnible mais la saison de prise de vue est moins propice"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 2500,
+                  content: "Envoyez moi vos commentaires à info@apiscore.be !"
+              })
+              )
+            }
+          }); // end of 'data/layer' questions
+      // end of 'data' question
+      } else if (res.value == 'author') {
+        botui.message.bot({
+                  delay: 1000,
+                  loading:true,
+                  content: "Nicolas Matton est à l'origine de ce site"
+              }).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "Je suis pour l'instant le seul contributeur,"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "Mais tout aide est la bienvenue !"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "Si besoin, vous pouvez me contacter à info@apiscore.be !"
+              })
+              ).then(
+              botui.message.bot({
+                  delay: 1500,
+                  content: "Merci pour votre intérêt !"
+              })
+              )
+
+      } else if (res.value == 'other') {
+         botui.message.bot({
+                  delay: 1000,
+                  loading:true,
+                  content: "OK ! quelle est votre question ?"
+              }).then(function () {
+                return botui.action.text({
+                  action: {
+                    size: 18,
+                    icon: 'question',
+                    sub_type: 'text',
+                    placeholder: 'Ma question...'
+                  }
+                })
+              }).then((res) => {
+                question = res.value; // save new value
+                return botui.message
+                  .bot({
+                    delay: 300,
+                    loading: true,
+                    content: 'Merci ! Je ne peux pas vous répondre pour l\'instant, mais laissez moi votre email et j\'y répondrai !'
+                  })
+                }).then(function () {
+                return botui.action.text({
+                  action: {
+                    size: 18,
+                    icon: 'envelope-o',
+                    sub_type: 'email',
+                    placeholder: 'Entrez votre email'
+                  }
+                })
+              }).then((res) => {
+                question = res.value; // save new value
+                return botui.message.bot({
+                    delay: 300,
+                    loading: true,
+                    content: 'Merci ! Je vais tentez d\'y répondre au plus vite !'
+                  })
+                })
+      }
+    });
+  } else if (res.value == 'contribute') {
+    botui.message.bot({
+            delay: 1000,
+            loading:true,
+            content: "Merci d'avance !"
+    }).then(
+            botui.message.bot({
+              delay: 1500,
+              content: "Vous pouvez !(github) [améliorer le site] sur github, m'offrir !(coffee) [un verre], suggérer une !(lightbulb-o) [idée] ou encore en parler autour de vous :)"
+              })
+            );
+  } else if (res.value == 'idea') {
+    botui.message.bot({
+            delay: 1000,
+            loading:true,
+            content: "Super, je suis preneur de toute les idées et suggestion !"
+    }).then(
+      botui.message.bot({
+        delay: 1500,
+        content: "Les idées déja recues sont listées à cette addresse: https://trello.com/b/rGPIJJiQ/apiscore"
+        })
+    ).then(
+      botui.message.bot({
+        delay: 1500,
+        content: "Le tableau des idées et améliorations est régulièrement mis jour ;)"
+        })
+    ).then(
+    botui.message.bot({
+      delay: 1500,
+      content: "Vous pouvez remplir le formulaire disponnible [ici] pour en ajouter"
+      })
+    );
+  } else if (res.value == 'newslettre') {
+    botui.message.bot({
+            delay: 1000,
+            loading:true,
+            content: "Ok, pas de problème !"
+    }).then(function () {
+      return botui.action.text({
+        action: {
+          size: 18,
+          icon: 'envelope-o',
+          sub_type: 'email',
+          placeholder: 'Entrez votre email'
+        }
+      })
+    }).then((res) => {
+      question = res.value; // save new value
+      return botui.message.bot({
+          delay: 300,
+          loading: true,
+          content: 'Merci ! Vous serez tenus informés de la suite !'
+        })
+      })
+  };
+
+  
+});
+  // END OF BOTUI pseudo-discussion
+
+  $("#chat-circle").click(function() {    
+    $("#chat-circle").toggle('scale');
+    $(".chat-box").toggle('scale');
+  });
+  
+  $(".chat-box-toggle").click(function() {
+    $("#chat-circle").toggle('scale');
+    $(".chat-box").toggle('scale');
+  });
+  
+});
+
+const jsFrame = new JSFrame();
+const frame = jsFrame.create({
+    title: 'Statistiques sur 3 km',
+    left: 20, top: 20, width: 600, height: 450,
+    appearanceName: 'yosemite',
+    movable: true,//Enable to be moved by mouse
+    resizable: true,//Enable to be resized by mouse
+    style: {//Style of the content.Can be specified just like inline style attribute.
+       backgroundColor: 'rgba(220,220,220,0.95)',//Ex.Background color of content(Opacity can be specified)
+       overflow: 'auto',//Ex.What to do when the drawing extends beyond the content area
+    },
+    html: '<canvas id="myChart" width="100%" height="70%" style="background-color: #ffffff00;"><p></p></canvas>'
+}).show();
+frame.setControl({
+                styleDisplay:'inline',
+                maximizeButton: 'zoomButton',
+                demaximizeButton: 'dezoomButton',
+                minimizeButton: 'minimizeButton',
+                deminimizeButton: 'deminimizeButton',
+                hideButton: 'closeButton',
+                animation: true,
+                animationDuration: 150,
+
+            });
+frame.control.on('hid', (frame, info) => {
+                frame.closeFrame();
+            });
+
+function showToast() {
+  jsFrame.showToast({
+      align: 'top', html: 'Sélectionnez une couche pour afficher les Statistiques',duration: 4000,
+  });
+}
+
+var ctx = document.getElementById('myChart');
+var options = {
+        responsive: true,
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              var dataset = data.datasets[tooltipItem.datasetIndex];
+              var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+              var total = meta.total;
+              var currentValue = parseFloat((dataset.data[tooltipItem.index])*0.0001).toFixed(1);
+              var percentage = parseFloat((currentValue/total*100/0.0001).toFixed(1));
+              return currentValue + 'ha (' + percentage + '%)';
+            },
+            title: function(tooltipItem, data) {
+              return data.labels[tooltipItem[0].index];
+            }
+          }
+        },
+        title: {
+          display: false,
+          position: "top",
+          text: "Pie Chart",
+          fontSize: 18,
+          fontColor: "#111"
+        },
+        legend: {
+          display: true,
+          position: "top",
+          labels: {
+            fontColor: "#333",
+            fontSize: 16
+          }
+        },
+        plugins: {
+          colorschemes: {
+            scheme: 'brewer.Paired12'
+      }
+    }
+};
+var chartdata = {
+    labels: [""],
+    datasets : [
+      {
+        data: []
+      }
+    ]
+};
+var pieGraph = new Chart(ctx, {
+    type: 'pie',
+    data: chartdata,
+    options: options
+});
+
+// Variables for buffer zone around points and markers
+
+var buffer_options = {steps: 30, units: 'kilometers'};
+var buffer_radius = 3;
+var selectedMarker = [];
+
+// variables for mapping
+//const cult_class = ['Prairies mellifères','Colza','Tournesol','Pomme de terre','Oléagineux','Céréales et assimilés','Prairies divers','Production fourragère','Autre','Cultures horticoles']
+//const colorpalette10 = ['rgb(141,211,199)','rgb(255,255,179)','rgb(190,186,218)','rgb(251,128,114)','rgb(128,177,211)','rgb(253,180,98)','rgb(179,222,105)','rgb(252,205,229)','rgb(217,217,217)','rgb(188,128,189)']
+/*
+corresponding between CULT_CODE and colorpalette10 index:
+CULT_CODE | idx colorpalette10
+ 1        |       7            |
+ 2        |       6            |
+ 3        |       3            |
+ 4        |       5            |
+ 5        |       8            |
+ 6        |       1            |
+ 7        |       9            |
+ 8        |       4            |
+ 9        |       10           |
+ 10       |       2            |
+
+               1,colorpalette10[7],
+               2,colorpalette10[6],
+               3,colorpalette10[3],
+               4,colorpalette10[5],
+               5,colorpalette10[8],
+               6,colorpalette10[1],
+               7,colorpalette10[9],
+               8,colorpalette10[4],
+               9,colorpalette10[10],
+               10,colorpalette10[2],
+*/
+
+// setup mapbox content
+mapboxgl.accessToken = 'pk.eyJ1Ijoibm1hdHRvbiIsImEiOiJjazg3ZmwyYXYwcDFmM29vMDF3cWdsaGZ0In0.WoO5-JMw1ftWE-qbcTUEAA';
+var map = new mapboxgl.Map({
+container: 'map', // container id
+style: 'mapbox://styles/nmatton/ck87gtqj011g91iqgb3lcn0p8',
+center: [4.6, 50.6], // starting position
+zoom: 9 // starting zoom
+});
+
+// graph related functions
+function addData(chart, label, data) {
+    chart.data.labels.push(label);
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.push(data);
+    });
+    chart.update();
+}
+
+function removeData(chart) {
+    chart.data.labels= [];
+    chart.data.datasets[0]["data"] = [];
+    chart.update();
+} 
+
+
+// Ajout cercle, calcul stats et MAJ pie chart au CLICK!
+map.on('click', function(e) {
+
+	// remove markers if already present on the map
+	if (selectedMarker!==null) {
+	  for (var i = selectedMarker.length - 1; i >= 0; i--) {
+			selectedMarker[i].remove();
+		}
+	}
+	var circlesColl = turf.featureCollection([]);
+	// add marker to clicked position
+	window.lngLat = new Array(e.lngLat.toArray()[0],e.lngLat.toArray()[1]);
+	var marker = new mapboxgl.Marker(e).setLngLat(lngLat).addTo(map);
+	selectedMarker.push(marker);
+	// add circle around marker
+	circlesColl.features.push(turf.circle(lngLat, buffer_radius, buffer_options));
+  map.getSource('circleData').setData(circlesColl);
+  // zoom to clicked point
+  var zoom_coords = [[e.lngLat.toArray()[0] - 0.04235, e.lngLat.toArray()[1] + 0.015654],[e.lngLat.toArray()[0] + 0.04235, e.lngLat.toArray()[1] - 0.015654]]
+  map.fitBounds(zoom_coords, {padding: 50});
+	// clean data on the graph
+	removeData(pieGraph)
+  var selectedLayer = 0;
+  // update the graph
+  if (layers.children[0].className == 'active') {
+    // ecotopes (lifewatch)
+    selectedLayer = 3;
+  } 
+  else if (layers.children[1].className == 'active') {
+    //occsol
+    selectedLayer = 2;
+  }
+  else if (layers.children[2].className == 'active') {
+    //agric
+    selectedLayer = 1;
+  }
+  else  {
+    // display a popup to ask to select a layer first
+    selectedLayer = 0;
+    showToast();
+  }
+  if (selectedLayer != 0) {
+  	jQuery.ajax({
+          // fetch data
+          url: "http://locla.be/apiscore/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          method: "GET",
+          success: function(data) {
+            console.log(data);
+            var cult = [];
+            var area = [];
+            for(var i in data) {            
+              addData(pieGraph, data[i][0], data[i][1])
+            }
+        }
+    })
+  }
+}); // end of "click" event
+
+// Hacked trick to add non-3857 wms layer
+function createTexture(context, canvas) {
+
+    let gl = context.gl;
+    let texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, canvas);
+    gl.generateMipmap(gl.TEXTURE_2D);
+    return texture;
+  }
+
+
+map.on('load', function() {
+ map.addSource('wms-picc_toponym', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=29&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256,
+    'attribution': 'SPW'
+  });
+  map.addLayer(
+    {
+      'id': 'toponymie',
+      'type': 'raster',
+      'source': 'wms-picc_toponym',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    }
+  );
+
+  //Set up dummy tile layer for listening tiles.
+    map.addSource( "dummy-lifewatch", {
+            'type': 'raster',
+            'tiles': [
+            'https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png'
+            ],
+            'tileSize': 256,
+            'attribution': '<a href="https://maps.elie.ucl.ac.be/lifewatch/ecotopes.html" target="_blank">© UCL-geomatics</a>'
+            });
+
+    map.addLayer(
+                {
+                'id':    "ecotopes",
+                'type': 'raster',
+                'source':   "dummy-lifewatch",
+                'paint': {},
+                'layout' : {'visibility': 'none'}
+                }, 'toponymie');
+
+  proj4.defs("EPSG:3812","+proj=lcc +lat_1=49.83333333333334 +lat_2=51.16666666666666 +lat_0=50.797815 +lon_0=4.359215833333333 +x_0=649328 +y_0=665262 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");  
+  ol.proj.proj4.register(proj4);
+
+
+// Set up hidden ol map 
+
+let wmslayer = new ol.layer.Tile({
+        source: new ol.source.TileWMS({
+          url: 'https://maps.elie.ucl.ac.be/cgi-bin/mapserv72?map=/maps_server/lifewatch/mapfiles/v3.10/LW_Belgium_ecotopes_lc_raster.map&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=lccs&TILED=true&date_db=2015&WIDTH=256&HEIGHT=256&CRS=EPSG:3812&STYLES=',
+          crossOrigin: '',
+          projection: 'EPSG:3812'
+        })
+      });
+  
+let olmap = new ol.Map({
+        layers: [wmslayer],
+        target: 'hiddenolmap',
+        view: new ol.View({
+          projection: 'EPSG:3857'
+        })
+      });
+
+
+ 
+  // Listen dummy source to get tiles needed. 
+
+  map.on('dataloading', function(tile) {
+        if(tile.sourceId == "dummy-lifewatch" )
+        { 
+    
+    let x = tile.tile.tileID.canonical.x;
+    let z = tile.tile.tileID.canonical.z;
+    let y = tile.tile.tileID.canonical.y;
+    let oltile = wmslayer.getSource().getTile(z,x,y,1,ol.proj.get("EPSG:3857")).load();
+      let interval = window.setInterval(function(){
+    let canvas =  wmslayer.getSource().getTile(z,x,y,1,ol.proj.get("EPSG:3857")).getImage();
+    if(canvas && tile.tile.texture)
+    { window.clearInterval(interval);
+      tile.tile.texture.texture = createTexture(map.painter.context,canvas)
+      map.triggerRepaint()
+    }
+    },200);
+        }
+        });
+
+
+ // add cosw WMS layer
+  map.addSource('wms-sigec18', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/AGRICULTURE/SIGEC_PARC_AGRI_ANON__2018/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=0&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256,
+    'attribution': '<a href="https://geoportail.wallonie.be/" target="_blank">© SPW</a>'
+  });
+  map.addLayer(
+    {
+      'id': 'parcelles agric.',
+      'type': 'raster',
+      'source': 'wms-sigec18',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    }
+  );
+
+
+  // Walous - occupation du sol
+  map.addSource('wms-walous-ocu', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/SOL_SOUS_SOL/WALOUS_OCCUPATION_SOL/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=0&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256,
+    'attribution': '<a href="https://geoportail.wallonie.be/" target="_blank">© SPW</a>'
+  });
+  map.addLayer(
+    {
+      'id': 'occupation du sol',
+      'type': 'raster',
+      'source': 'wms-walous-ocu',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    },
+    'parcelles agric.'
+  );
+
+  // Walous - utilisation du sol
+ /* map.addSource('wms-walous-uti', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/SOL_SOUS_SOL/WALOUS_UTILISATION_SOL/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=9&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256
+  });
+  map.addLayer(
+    {
+      'id': 'utilisation du sol',
+      'type': 'raster',
+      'source': 'wms-walous-uti',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    },
+    'occupation du sol'
+  );*/
+
+
+  map.addSource('wms-picc_lignes', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/TOPOGRAPHIE/PICC_VDIFF/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=16&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256,
+    'attribution': '<a href="https://geoportail.wallonie.be/" target="_blank">© SPW</a>'
+  });
+  map.addLayer(
+    {
+      'id': 'haies',
+      'type': 'raster',
+      'source': 'wms-picc_lignes',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    },
+    'occupation du sol'
+  );
+
+  map.addSource('wms-ortho', {
+    'type': 'raster',
+    'tiles': [
+    'https://geoservices.wallonie.be/arcgis/services/IMAGERIE/ORTHO_2019/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=0&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
+    ],
+    'tileSize': 256,
+    'attribution': '<a href="https://geoportail.wallonie.be/" target="_blank">© SPW</a>'
+  });
+  map.addLayer(
+    {
+      'id': 'orthophoto',
+      'type': 'raster',
+      'source': 'wms-ortho',
+      'paint': {},
+      'layout' : {'visibility': 'none'}
+    },
+    'haies'
+  );
+
+  // add internal source for creating circle around click position
+	map.addSource('circleData', {
+		type: 'geojson',
+		data: {
+		  type: 'FeatureCollection',
+		  features: [],
+		},
+	});
+	map.addLayer({
+		id: 'data_fill',
+		type: 'fill',
+		source: 'circleData',
+		paint: {
+		  'fill-color': '#00b7bf',
+		  'fill-opacity': 0.2,
+      'fill-outline-color': 'red',
+      'fill-antialias': true
+	    },
+	});
+  map.addLayer({
+    id: 'data_line',
+    type: 'line',
+    source: 'circleData',
+    paint: {
+      'line-color': 'orange',
+      'line-width': 3
+      },
+  });
+
+}); // end of "load"
+
+var popup = new mapboxgl.Popup({
+  closeButton: false,
+  closeOnClick: false
+});
+
+// ----------  Sélection de la couche à afficher
+
+var toggleableLayerIds = ['ecotopes', 'occupation du sol', 'parcelles agric.' , 'orthophoto'];
+var legend = 'http://locla.be/apiscore/legend_lccs.png'
+var legends={ 
+     "ecotopes":'http://locla.be/apiscore/legend_lccs.png',
+     "occupation du sol":'http://locla.be/apiscore/legend_walous_ocu.png', 
+     "parcelles agric.":'http://locla.be/apiscore/legend_sigec.png',
+     "utilisation du sol":'http://locla.be/apiscore/legend_walous_util.png',
+     'orthophoto':'https://upload.wikimedia.org/wikipedia/commons/4/48/BLANK_ICON.png'
+};
+for (var i = 0; i < toggleableLayerIds.length; i++) {
+  // creation du contenu
+  var id = toggleableLayerIds[i];
+  var link = document.createElement('a');
+  link.href = '#';
+  //if (id == 'ecotopes') {link.className = 'active';} else {link.className = '';} // required when choice is to enable default layer
+  link.className = '';
+  link.textContent = id;
+  // ajout du lien et action sur visibilité de la couche
+  link.onclick = function(e) {
+    var clickedLayer = this.textContent;
+    e.preventDefault();
+    e.stopPropagation();
+    var isHide = false;
+    for (var j = 0; j < toggleableLayerIds.length; j++) {
+      if (clickedLayer === toggleableLayerIds[j] && layers.children[j].className === '') {
+        layers.children[j].className = 'active';
+        map.setLayoutProperty(toggleableLayerIds[j], 'visibility', 'visible');
+      }
+      else if (clickedLayer === toggleableLayerIds[j] && layers.children[j].className === 'active') {
+        layers.children[j].className = '';
+        map.setLayoutProperty(toggleableLayerIds[j], 'visibility', 'none');
+        isHide = true;
+      }
+      else {
+        layers.children[j].className = '';
+        map.setLayoutProperty(toggleableLayerIds[j], 'visibility', 'none');
+      }
+      if (clickedLayer == 'orthophoto') {map.setLayoutProperty('haies', 'visibility', 'visible');}
+    }
+  // update legend
+  ctx = document.getElementById('legend');
+  if (clickedLayer == 'orthophoto' || isHide) {ctx.innerHTML = "";} else {ctx.innerHTML = "<b>Légende</b> <br> <img src=" + legends[clickedLayer] +" alt='légende'>";}
+  // update graph content
+  // clean data on the graph
+  removeData(pieGraph)
+  // update the graph
+  var selectedLayer = 0;
+  switch (clickedLayer) {
+    case 'ecotopes':
+      selectedLayer = 3;
+      break;
+    case 'occupation du sol':
+      selectedLayer = 2;
+      break;
+    case 'parcelles agric.':
+      selectedLayer = 1;
+      break;
+    default:
+      selectedLayer = 0;
+      break;
+  }
+  if (selectedLayer != 0) {
+    jQuery.ajax({
+          // fetch data
+          url: "http://locla.be/apiscore/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          method: "GET",
+          success: function(data) {
+            console.log(data);
+            var cult = [];
+            var area = [];
+            for(var i in data) {            
+              addData(pieGraph, data[i][0], data[i][1])
+            }
+        }
+    });
+  }
+};
+   
+  var layers = document.getElementById('menu');
+  layers.appendChild(link);
+}
+
+
+map.addControl(new mapboxgl.NavigationControl());
+
+</script>
+ 
+</body>
+</html>
