@@ -1,14 +1,13 @@
-<?php include("localsettings.php");
-$password = PASSWORD;  //defined in secretInfo.php
+<?php 
+include("localsettings.php"); // php local page for importing credential to DB connection
+$password = PASSWORD;  //defined in localsettings.php
 $username = USERNAME;
 $db_addr = DB_ADDR;
 $db_name = DB_NAME;
 $db_port = DB_PORT;
-?>
-<?php
+
 //setting header to json
 header('Content-Type: application/json');
-//echo "starting page";
 // Declare a new class for the pg_connect() connect parameters
 
 // testing input values
@@ -42,7 +41,7 @@ foreach ($param as $key => $value) {
 //get connection & check success
 $mysqli =  pg_connect($hostString);
 if(!$mysqli){
-  die("Connection failed: " . $mysqli->error);
+  die("Connection failed");
 }
 
 switch ($_GET['layer']) {
@@ -108,7 +107,7 @@ switch ($_GET['layer']) {
 						GROUP BY cl.label
 						ORDER BY area_exact DESC");
 		break;
-	case 4: // picc
+	case 4: // picc (haies)
 		$query = sprintf("SELECT sum(p.length) as sum_lengths
 							FROM apiscore.picc p
 							WHERE st_intersects(p.geometry, ST_Buffer(ST_Transform(ST_SetSRID( ST_Point( $1, $2), $3),31370),3000))");
@@ -137,7 +136,9 @@ while ($row = pg_fetch_row($result)) {
 	}
 	$i += 1;
 }
-$data[] = ["autre", (string)$sum];
+if ($_GET['layer'] != 4) {
+	$data[] = ["autre", (string)$sum];
+}
 
 //free memory associated with result
 //$result->close();
