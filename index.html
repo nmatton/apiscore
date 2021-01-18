@@ -23,9 +23,9 @@
 <link rel="stylesheet" type="text/css" href="static/css/style.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui.min.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui-theme-default.css">
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css">
-<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
-<link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css">
+<!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"> -->
+<link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" >
+<!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css"> -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
 
@@ -40,7 +40,7 @@ body { margin: 0; padding: 0; }
 </head>
 <body>
 <div id="map"></div>
-<pre id="info">Apiscore - V0.5b</pre>
+<pre id="info">Apiscore - V0.5e</pre>
 <nav id="menu"></nav>
 <div class='map-overlay' id='legend'></div>
 <div class="waiting"></div>
@@ -430,9 +430,8 @@ const frame = jsFrame.create({
                   name: 'menu',
                   visible: true,
                   childMenuHTML: '<div class="list-group">' +
-                      '  <div name="menu1" class="list-group-item list-group-item-action py-2">test1</div>' +
-                      '  <div name="menu2" class="list-group-item list-group-item-action py-2">test 2</div>' +
-                      '  <div name="menu3" class="list-group-item list-group-item-action py-2">test 03</div>' +
+                      '  <div name="menu_layer" class="list-group-item list-group-item-action py-2">Stats sur couches</div>' +
+                      '  <div name="menu_hedgerow" class="list-group-item list-group-item-action py-2">Stats haies</div>' + 
                       '</div>',
                   childMenuWidth: 500
               },
@@ -440,7 +439,7 @@ const frame = jsFrame.create({
       },
   },
 
-    html: '<canvas id="myChart" width="100%" height="70%" style="background-color: #ffffff00;"><p></p></canvas>'
+    html: '<canvas id="myChart" width="100%" height="70%" style="background-color: #ffffff00;"><p></p></canvas><canvas id="myLines" width="100%" height="70%" style="background-color: #ffffff00; display:none"><p></p></canvas>'
 }).show();
 frame.setControl({
                 styleDisplay:'inline',
@@ -459,8 +458,12 @@ frame.control.on('hid', (frame, info) => {
 frame.on('menu', 'click', (_frame, evt, info) => {
             const name = evt.target.getAttribute('name');
 
-            if (name && name.startsWith('menu')) {
-                alert(name + ' clicked');
+            if (name == 'menu_layer') {
+                document.getElementById("myLines").style.display = "none";
+                document.getElementById("myChart").style.display = "block";
+            } else if (name == 'menu_hedgerow') {
+              document.getElementById("myChart").style.display = "none";
+              document.getElementById("myLines").style.display = "block";
             }
         });
 function showToast() {
@@ -469,44 +472,42 @@ function showToast() {
   });
 }
 
+// Initialize Pie Chart (for layers stats)
+
 var ctx = document.getElementById('myChart');
 var options = {
-        responsive: true,
-        tooltips: {
-          callbacks: {
-            label: function(tooltipItem, data) {
-              var dataset = data.datasets[tooltipItem.datasetIndex];
-              var meta = dataset._meta[Object.keys(dataset._meta)[0]];
-              var total = meta.total;
-              var currentValue = parseFloat((dataset.data[tooltipItem.index])*0.0001).toFixed(1);
-              var percentage = parseFloat((currentValue/total*100/0.0001).toFixed(1));
-              return currentValue + 'ha (' + percentage + '%)';
-            },
-            title: function(tooltipItem, data) {
-              return data.labels[tooltipItem[0].index];
-            }
+      responsive: true,
+      tooltips: {
+        callbacks: {
+          label: function(tooltipItem, data) {
+            var dataset = data.datasets[tooltipItem.datasetIndex];
+            var meta = dataset._meta[Object.keys(dataset._meta)[0]];
+            var total = meta.total;
+            var currentValue = parseFloat((dataset.data[tooltipItem.index])*0.0001).toFixed(1);
+            var percentage = parseFloat((currentValue/total*100/0.0001).toFixed(1));
+            return currentValue + 'ha (' + percentage + '%)';
+          },
+          title: function(tooltipItem, data) {
+            return data.labels[tooltipItem[0].index];
           }
-        },
-        title: {
-          display: false,
-          position: "top",
-          text: "Pie Chart",
-          fontSize: 18,
-          fontColor: "#111"
-        },
-        legend: {
-          display: true,
-          position: "top",
-          labels: {
-            fontColor: "#333",
-            fontSize: 16
-          }
-        },
-        plugins: {
-          colorschemes: {
-            scheme: 'brewer.Paired12'
-      }
+        }
+      },
+      title: {
+        display: false
+      },
+      legend: {
+        display: true,
+        position: "top",
+        labels: {
+          fontColor: "#333",
+          fontSize: 16
+        }
+      },
+      plugins: {
+        colorschemes: {
+          scheme: 'brewer.Paired12'
     }
+  }
 };
 var chartdata = {
     labels: [""],
@@ -522,40 +523,40 @@ var pieGraph = new Chart(ctx, {
     options: options
 });
 
+// Initialize Horizontal bar chart
+
+var ctx = document.getElementById('myLines');
+var HB_options = {
+  responsive: true,
+  title: {
+    display: false
+  },
+  legend: {
+    display: false
+  }
+};
+var HbarData = {
+  labels:[],
+  datasets:[{
+    data:[],
+    fill:false,
+    backgroundColor:["rgba(255, 99, 132, 0.2)"],
+    borderColor:["rgb(255, 99, 132)"],
+    borderWidth:1
+  }]
+};
+var HbarGraph = new Chart(ctx, {
+    type: 'horizontalBar',
+    data: HbarData,
+    options: HB_options
+});
+
+
 // Variables for buffer zone around points and markers
 
 var buffer_options = {steps: 30, units: 'kilometers'};
 var buffer_radius = 3;
 var selectedMarker = [];
-
-// variables for mapping
-//const cult_class = ['Prairies mellifères','Colza','Tournesol','Pomme de terre','Oléagineux','Céréales et assimilés','Prairies divers','Production fourragère','Autre','Cultures horticoles']
-//const colorpalette10 = ['rgb(141,211,199)','rgb(255,255,179)','rgb(190,186,218)','rgb(251,128,114)','rgb(128,177,211)','rgb(253,180,98)','rgb(179,222,105)','rgb(252,205,229)','rgb(217,217,217)','rgb(188,128,189)']
-/*
-corresponding between CULT_CODE and colorpalette10 index:
-CULT_CODE | idx colorpalette10
- 1        |       7            |
- 2        |       6            |
- 3        |       3            |
- 4        |       5            |
- 5        |       8            |
- 6        |       1            |
- 7        |       9            |
- 8        |       4            |
- 9        |       10           |
- 10       |       2            |
-
-               1,colorpalette10[7],
-               2,colorpalette10[6],
-               3,colorpalette10[3],
-               4,colorpalette10[5],
-               5,colorpalette10[8],
-               6,colorpalette10[1],
-               7,colorpalette10[9],
-               8,colorpalette10[4],
-               9,colorpalette10[10],
-               10,colorpalette10[2],
-*/
 
 // setup mapbox content
 mapboxgl.accessToken = 'pk.eyJ1Ijoibm1hdHRvbiIsImEiOiJjazg3ZmwyYXYwcDFmM29vMDF3cWdsaGZ0In0.WoO5-JMw1ftWE-qbcTUEAA';
@@ -604,6 +605,7 @@ map.on('click', function(e) {
   map.fitBounds(zoom_coords, {padding: 50});
 	// clean data on the graph
 	removeData(pieGraph)
+  removeData(HbarGraph)
   var selectedLayer = 0;
   // update the graph
   if (layers.children[0].className == 'active') {
@@ -629,15 +631,28 @@ map.on('click', function(e) {
           url: "static/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
-            console.log(data);
             var cult = [];
             var area = [];
             for(var i in data) {            
               addData(pieGraph, data[i][0], data[i][1])
             }
         }
-    })
+    });
   }
+  // compute PICC stats and update Line graph
+    jQuery.ajax({
+        // fetch data
+        url: "static/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=4",
+        method: "GET",
+        success: function(data) {
+          console.log(data)
+          var cult = [];
+          var area = [];
+          for(var i in data) {            
+            addData(HbarGraph, "haies", data[i][0])
+          }
+      }
+  });
 }); // end of "click" event
 
 // Hacked trick to add non-3857 wms layer
