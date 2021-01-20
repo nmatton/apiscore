@@ -41,7 +41,7 @@ foreach ($param as $key => $value) {
 //get connection & check success
 $mysqli =  pg_connect($hostString);
 if(!$mysqli){
-  die("Connection failed");
+  die("Connection failed" . $mysqli->error);
 }
 
 switch ($_GET['layer']) {
