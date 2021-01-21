@@ -213,7 +213,6 @@ body.loading .waiting {
 
 
 /* STYLE FOR MODAL WINDOW*/
-
 #indwxt {
   color: rgb(170, 5, 5);
 }
@@ -307,6 +306,42 @@ section.resume-section {
   color: rgb(170, 5, 5);
 }
 
+.third {
+  z-index: 1000;
+  border-top-color: rgb(52, 152, 219);
+  border-right-color: rgb(52, 152, 219);
+  border-bottom-color: rgb(52, 152, 219);
+  border-left-color: rgb(52, 152, 219);
+  color: rgb(255, 255, 255);
+  box-shadow: rgb(52, 152, 219) 0px 0px 60px 60px inset, rgb(52, 152, 219) 0px 0px 0px 0px;
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+  transition-delay: 0s;
+  transition-property: all;
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  margin-top: 22px;
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  border-bottom-right-radius: 30px;
+  border-bottom-left-radius: 30px;
+}
+
+.third:hover {
+  box-shadow: rgb(52, 152, 219) 0px 0px 10px 0px inset, rgb(52, 152, 219) 0px 0px 10px 4px;
+}
+
+@media (min-width: 768px) {
+  section.resume-section {
+    min-height: 100vh;
+  }
+
+  section.resume-section .resume-item .resume-date {
+    min-width: 18rem;
+  }
+}
+
 @media (min-width: 992px) {
   body {
     padding-top: 0px;
@@ -386,17 +421,7 @@ section.resume-section {
   }
 
   section.resume-section {
-    padding-top: 3rem !important;
-    padding-bottom: 3rem !important;
-  }
-}
-
-@media (min-width: 768px) {
-  section.resume-section {
-    min-height: 100vh;
-  }
-
-  section.resume-section .resume-item .resume-date {
-    min-width: 18rem;
+    padding-top: 0rem !important;
+    padding-bottom: 0rem !important;
   }
 }
