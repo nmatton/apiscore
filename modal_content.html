@@ -211,6 +211,7 @@
         (function($) {
             "use strict";
             // Start of use strict
+            const jsFrame = new JSFrame();
             let myForm = document.getElementById('newsletter');
             myForm.addEventListener('submit', e => {
               e.preventDefault();
@@ -225,7 +226,28 @@
               })
               .then(res => {
                 if (res) {
-                    alert('worked');
+                    console.log('form OK')
+                    jsFrame.showToast({align: 'bottom', html: 'Merci, votre email a bien été enregistré !',duration: 4000});
+                }
+              });
+            });
+
+            let myForm = document.getElementById('contact_form');
+            myForm.addEventListener('submit', e => {
+              e.preventDefault();
+              const formData = new FormData(myForm);
+              fetch(myForm.getAttribute('action'), {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/x-www-form-urlencoded;charset=UTF-8',
+                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: new URLSearchParams(formData).toString()
+              })
+              .then(res => {
+                if (res) {
+                    console.log('message OK')
+                    jsFrame.showToast({align: 'bottom', html: 'Merci, votre message a bien été enregistré !',duration: 4000});
                 }
               });
             });
