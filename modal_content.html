@@ -64,7 +64,7 @@
                         <div class="row justify-content-center">
                             <div class="col-md-8 text-center">
                                 <p class="lead text-secondary mb-1">Inscrivez vous pour rester informé de l'évolution du site, des mises à jour et bien d'autre contenus !</p>
-                                <form action="/#" data-netlify="true" name="newsletter" class="mt-5 mb-5">
+                                <form action="/#" data-netlify="true" name="newsletter" class="mt-5 mb-5" id="newsletter">
                                     <div class="input-group mb-2"><input type="text" placeholder="email@example.com" aria-label="Recipient's email" aria-describedby="button-addon2" name="email" class="form-control form-control-lg" />
                                         <div class="input-group-append"><button id="button-addon2" type="button" class="btn btn-primary btn-lg">S'inscrire</button></div>
                                     </div>
@@ -211,6 +211,24 @@
         (function($) {
             "use strict";
             // Start of use strict
+            let myForm = document.getElementById('newsletter');
+            myForm.addEventListener('submit', e => {
+              e.preventDefault();
+              const formData = new FormData(myForm);
+              fetch(myForm.getAttribute('action'), {
+                method: 'POST',
+                headers: {
+                  'Accept': 'application/x-www-form-urlencoded;charset=UTF-8',
+                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
+                },
+                body: new URLSearchParams(formData).toString()
+              })
+              .then(res => {
+                if (res) {
+                    alert('worked');
+                }
+              });
+            });
 /*            document.querySelector("form").addEventListener("submit", handleSubmit);
             const handleSubmit = (e) => {
               e.preventDefault()
