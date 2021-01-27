@@ -61,15 +61,20 @@
                 </div>
                 <div class="container-fluid py-5">
                     <p id="iyouao">Vous trouverez ci-dessous plus de détails sur l'utilisation du site, et comment en faire bon usage pour évaluer la qualité de votre environnement apicole !</p>
-                    <section class="bg-light py-5">
+                    <section class="py-5">
                         <div class="row justify-content-center">
                             <div class="col-md-8 text-center">
                                 <p class="lead text-secondary mb-1">Inscrivez vous pour rester informé de l'évolution du site, des mises à jour et bien d'autre contenus !</p>
-                                <form action="/#" data-netlify="true" name="newsletter" class="mt-5 mb-5" id="newsletter">
-                                    <div class="input-group mb-2"><input type="text" placeholder="email@example.com" aria-label="Recipient's email" aria-describedby="button-addon2" name="email" class="form-control form-control-lg" />
-                                        <div class="input-group-append"><button id="button-addon2" type="button" class="btn btn-primary btn-lg">S'inscrire</button></div>
-                                    </div>
+                                <!-- Formulaire d'inscription MailChimp -->
+                                <form action="https://locla.us7.list-manage.com/subscribe/post?u=dd6851bcf491dd2d710030c75&amp;id=85588c3f44" method="post" id="mc-embedded-subscribe-form" name="mc-embedded-subscribe-form" class="validate" target="_blank" novalidate>
+                                        <div class="input-group mb-2">
+                                            <input type="email" value="" name="EMAIL" class="form-control form-control-lg" id="mce-EMAIL" placeholder="exemple@email.com" required>
+                                            <!-- real people should not fill this in and expect good things - do not remove this or risk form bot signups-->
+                                            <div style="position: absolute; left: -5000px;" aria-hidden="true"><input type="text" name="b_dd6851bcf491dd2d710030c75_85588c3f44" tabindex="-1" value=""></div>
+                                            <div class="input-group-append"><input type="submit" value="S'inscrire" name="subscribe" id="mc-embedded-subscribe" class="btn btn-primary btn-lg"></div>
+                                        </div>
                                 </form>
+                                <!--Fin du formulaire d'inscription MailChimp-->
                             </div>
                         </div>
                     </section>
@@ -210,60 +215,6 @@
     <script>
         (function($) {
             "use strict";
-            // Start of use strict
-            const jsFrame = new JSFrame();
-            let myForm = document.getElementById('newsletter');
-            myForm.addEventListener('submit', e => {
-              e.preventDefault();
-              const formData = new FormData(myForm);
-              fetch(myForm.getAttribute('action'), {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/x-www-form-urlencoded;charset=UTF-8',
-                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: new URLSearchParams(formData).toString()
-              })
-              .then(res => {
-                if (res) {
-                    console.log('form OK')
-                    jsFrame.showToast({align: 'bottom', html: 'Merci, votre email a bien été enregistré !',duration: 4000});
-                }
-              });
-            });
-
-            let myForm2 = document.getElementById('contact_form');
-            myForm2.addEventListener('submit', e => {
-              e.preventDefault();
-              const formData = new FormData(myForm2);
-              fetch(myForm2.getAttribute('action'), {
-                method: 'POST',
-                headers: {
-                  'Accept': 'application/x-www-form-urlencoded;charset=UTF-8',
-                  'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8'
-                },
-                body: new URLSearchParams(formData).toString()
-              })
-              .then(res => {
-                if (res) {
-                    console.log('message OK')
-                    jsFrame.showToast({align: 'bottom', html: 'Merci, votre message a bien été enregistré !',duration: 4000});
-                }
-              });
-            });
-/*            document.querySelector("form").addEventListener("submit", handleSubmit);
-            const handleSubmit = (e) => {
-              e.preventDefault()
-              let myForm = document.getElementById('contact');
-              let formData = new FormData(myForm)
-              fetch('/', {
-                method: 'POST',
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: new URLSearchParams(formData).toString()
-              }).then(() => console.log('Form successfully submitted')).catch((error) =>
-                alert(error))
-            }
-*/
             // Smooth scrolling using jQuery easing
             $('body').addClass('page-top');
             $('a.js-scroll-trigger[href*="#"]:not([href="#"])').click(function() {
