@@ -326,6 +326,7 @@ var HbarGraph = new Chart(ctx, {
 var buffer_options = {steps: 30, units: 'kilometers'};
 var buffer_radius = 3;
 var selectedMarker = [];
+var data_buffer = {};
 
 // setup mapbox content
 mapboxgl.accessToken = 'pk.eyJ1Ijoibm1hdHRvbiIsImEiOiJjazg3ZmwyYXYwcDFmM29vMDF3cWdsaGZ0In0.WoO5-JMw1ftWE-qbcTUEAA';
@@ -400,8 +401,11 @@ map.on('click', function(e) {
           url: "assets/php/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
-            var cult = [];
-            var area = [];
+            var cult = data.map(function(v){ return v[0] });
+            var area = data.map(function(v){ return v[1] });
+            data_buffer[e.lngLat.toArray()[0] + e.lngLat.toArray()[1]] = {
+              [selectedLayer] : {'label': cult, 'data' : area}
+            };
             for(var i in data) {            
               addData(pieGraph, data[i][0], data[i][1])
             }
@@ -415,8 +419,17 @@ map.on('click', function(e) {
         method: "GET",
         success: function(data) {
           console.log(data)
-          var cult = [];
-          var area = [];
+          // if location key already exists (layer already selected when click on new location)
+          // no need to create a nex key, just add the layer 4 with data
+          if (Object.keys(data_buffer).includes((e.lngLat.toArray()[0] + e.lngLat.toArray()[1]).toString())) {
+            data_buffer[e.lngLat.toArray()[0] + e.lngLat.toArray()[1]][4] = {
+                'label': 'haies', 'data' : data[0][0]
+              };            
+          } else { // if the location key does not exists, create it and add layer 4 data
+            data_buffer[e.lngLat.toArray()[0] + e.lngLat.toArray()[1]] = {
+                4 : {'label': 'haies', 'data' : data[0][0]}
+              }; 
+          }
           for(var i in data) {            
             addData(HbarGraph, "haies", data[i][0])
           }
@@ -716,21 +729,33 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
     default:
       selectedLayer = 0;
       break;
-  }
+  };
   if (selectedLayer != 0) {
-    jQuery.ajax({
-          // fetch data
-          url: "assets/php/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
-          method: "GET",
-          success: function(data) {
-            console.log(data);
-            var cult = [];
-            var area = [];
-            for(var i in data) {            
-              addData(pieGraph, data[i][0], data[i][1])
-            }
-        }
-    });
+    //if (Object.keys(data_buffer).includes((window.lngLat[0] + window.lngLat[1]).toString()) ) {
+    if (Object.keys(data_buffer[window.lngLat[0] + window.lngLat[1]]).includes(selectedLayer.toString())) {
+        data = data_buffer[window.lngLat[0]+ window.lngLat[1]][selectedLayer]['data'];
+        label = data_buffer[window.lngLat[0]+ window.lngLat[1]][selectedLayer]['label'];
+        for(var i in data) {            
+                addData(pieGraph, label[i], data[i])
+              }
+    } else {
+      jQuery.ajax({
+            // fetch data
+            url: "assets/php/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+            method: "GET",
+            success: function(data) {
+              console.log(data);
+              var cult = data.map(function(v){ return v[0] });
+              var area = data.map(function(v){ return v[1] });
+              data_buffer[window.lngLat[0] +  window.lngLat[1]][selectedLayer] = {
+                'label': cult, 'data' : area
+              };
+              for(var i in data) {            
+                addData(pieGraph, data[i][0], data[i][1])
+              }
+          }
+      });
+    }
   }
 };
    
