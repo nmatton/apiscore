@@ -1,3 +1,5 @@
 # private informations
-static/localsettings.php
+assets/php/localsettings.php
+# minified versions
 *.min.css
+*.min.js
