@@ -10,7 +10,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.3/proj4.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="static/js/chartjs-plugin-colorschemes.js"></script>
+<script src="assets/js/chartjs-plugin-colorschemes.js"></script>
 <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
 <!-- <script src="https://cdn.jsdelivr.net/npm/jsframe.js/lib/jsframe.min.js"></script> -->
 <script src="https://riversun.github.io/jsframe/jsframe.js"></script>
@@ -20,7 +20,7 @@
 
 
 <link href="https://api.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.css" rel="stylesheet" />
-<link rel="stylesheet" type="text/css" href="static/css/style.css">
+<link rel="stylesheet" type="text/css" href="assets/css/styles.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui.min.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui-theme-default.css">
 <!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"> -->
@@ -398,7 +398,7 @@ map.on('click', function(e) {
   if (selectedLayer != 0) {
   	jQuery.ajax({
           // fetch data
-          url: "static/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          url: "assets/php/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
             var cult = [];
@@ -412,7 +412,7 @@ map.on('click', function(e) {
   // compute PICC stats and update Line graph
     jQuery.ajax({
         // fetch data
-        url: "static/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=4",
+        url: "assets/php/data.php?x=" + e.lngLat.toArray()[0] + "&y=" + e.lngLat.toArray()[1] + "&epsg=4326&year=2018&layer=4",
         method: "GET",
         success: function(data) {
           console.log(data)
@@ -721,7 +721,7 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
   if (selectedLayer != 0) {
     jQuery.ajax({
           // fetch data
-          url: "static/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
+          url: "assets/php/data.php?x=" + window.lngLat[0] + "&y=" + window.lngLat[1] + "&epsg=4326&year=2018&layer=" + selectedLayer,
           method: "GET",
           success: function(data) {
             console.log(data);
