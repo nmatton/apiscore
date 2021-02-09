@@ -5,9 +5,9 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Your Project Title </title>
-    <meta name="description" content="">
-    <meta name="author" content="">
+    <title>Bienvenue sur Apiscore</title>
+    <meta name="description" content="Bienvenue sur Apiscore">
+    <meta name="author" content="Nicolas Matton (Apiscore)">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
         crossorigin="anonymous">
     <link href="https://fonts.googleapis.com/css?family=Saira+Extra+Condensed:500,700" rel="stylesheet">
@@ -137,11 +137,11 @@
                         <div class="card-header">Formulaire de contact
                         </div>
                         <div id="iayvw" class="card-body">
-                            <form action="/#" name="contact" method="POST" data-netlify="true" id="contact_form">
-                                <div class="form-group"><label for="exampleInputEmail" id="iddixg">Votre Email:</label><input type="email" name = "email" placeholder="nom@email.com" class="form-control" /></div>
-                                <div class="form-group"><label for="exampleInputName">Votre nom:</label><input type="text" name="name" placeholder="Michel Dupont" class="form-control" /></div>
-                                <div class="form-group"><label for="exampleInputMessage">Votre message:</label><textarea name="message" rows="5" class="form-control"></textarea></div><button
-                                    type="submit" class="btn btn-primary">Envoyer</button>
+                            <form action="assets/php/form-to-email.php" name="contact" method="POST" id="contact_form">
+                                <div class="form-group"><label for="exampleInputEmail" id="iddixg">Votre Email:</label><input type="email" id="email" name = "email" placeholder="nom@email.com" class="form-control" /></div>
+                                <div class="form-group"><label for="exampleInputName">Votre nom:</label><input type="text" name="name" id='name' placeholder="Michel Dupont" class="form-control" /></div>
+                                <div class="form-group"><label for="exampleInputMessage">Votre message:</label><textarea name="message" id='message' rows="5" class="form-control"></textarea></div><button
+                                    type="button" id ="submit" name='submit' value="submit" class="btn btn-primary send">Envoyer</button>
                             </form>
                         </div>
                     </div>
@@ -214,6 +214,33 @@
     </div>
     <script>
         (function($) {
+            const jsFrame = new JSFrame();
+            // form submission
+            function showToast() {
+              jsFrame.showToast({
+                  align: 'bottom', html: 'Demande envoyée ! Nous y répondrons prochainement',duration: 5000,
+              });
+            }
+            $("#submit").click(function(e){
+                console.log($("#email").val())
+                jQuery.post("assets/php/form-to-email.php", {
+                    email:$("#email").val(),
+                    name:$("#name").val(),
+                    message:$("#message").val(),
+                    submit:'submit'
+                },  function(data, textStatus){
+                    if( data == 1)
+                    {
+                        alert("Une erreur s'est produite, merci de contacter l'administrateur (info@apiscore.be). Désolé !");
+                        e.preventDefault(); 
+                    }
+                    else
+                    {
+                        showToast();
+                        e.preventDefault(); 
+                    }
+                });
+            });
             "use strict";
             // Smooth scrolling using jQuery easing
             $('body').addClass('page-top');

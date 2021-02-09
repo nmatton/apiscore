@@ -7,7 +7,7 @@ html, body {
   position: fixed;
   bottom: 30px;
   left: 10px;
-  background: #5A5EB9;
+  background: #007bff;
   width: 60px;
   height: 60px;  
   border-radius: 50%;
@@ -66,7 +66,7 @@ html, body {
   cursor:pointer;
 }
 .chat-box-header {
-  background: #5A5EB9;
+  background: #2778ce;
   height:70px;
   border-top-left-radius:5px;
   border-top-right-radius:5px; 
@@ -175,7 +175,7 @@ html, body {
 }
  
 #menu a.active {
-  background-color: #3887be;
+  background-color: #2778ce;
   color: #ffffff;
 }
  
