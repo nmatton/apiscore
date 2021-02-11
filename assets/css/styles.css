@@ -425,3 +425,5 @@ section.resume-section {
     padding-bottom: 0rem !important;
   }
 }
+
+.modal-content { background-color: purple !important; color: #fff; text-align: center; } .modal .btn { display: block; margin: 15px auto 0 auto; } .modal-title{ font-weight: 700; } .monster-modal{ width: 35%; margin: 0 auto; } .modal-content p{ font-size: 1.2em; } .modal-content .btn{ font-size: 1.5em; font-weight: 700; }

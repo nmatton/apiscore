@@ -264,7 +264,7 @@ botui.message.add({ // show a message
     ).then(
     botui.message.bot({
       delay: 1500,
-      content: "Vous pouvez remplir le formulaire disponnible [ici] pour en ajouter"
+      content: "Vous pouvez remplir le formulaire disponnible [ici](https://mijqd9hql4r.typeform.com/to/eniMgYMZ) pour en ajouter"
       })
     );
   } else if (res.value == 'newslettre') {

@@ -4,46 +4,57 @@
 <meta charset="utf-8" />
 <title>Apiscore - Quel est votre environnement apicole ?</title>
 <meta name="description" content="Evaluez votre environnement apicole">
-
+<!-- scripts -->
 <script src="https://api.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.6.3/proj4.js"></script>
 <script src="https://cdn.jsdelivr.net/gh/openlayers/openlayers.github.io@master/en/v6.4.3/build/ol.js"></script>
 <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
-<script src="assets/js/chartjs-plugin-colorschemes.js"></script>
+<script src="assets/js/jquery.cookie.js"></script>
+<script src="assets/js/chartjs-plugin-colorschemes.min.js"></script>
 <script src='https://unpkg.com/@turf/turf/turf.min.js'></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/jsframe.js/lib/jsframe.min.js"></script> -->
 <script src="https://riversun.github.io/jsframe/jsframe.js"></script>
 <script src="https://cdn.jsdelivr.net/vue/latest/vue.min.js"></script>
 <script src="https://unpkg.com/botui/build/botui.min.js"></script>
-<script src="assets/js/botui_settings.js"></script>
-
-
+<script src="assets/js/botui_settings.min.js"></script>
+<script src="assets/js/bootstrap.min.js"></script>
+<!-- stylesheets -->
 <link href="https://api.mapbox.com/mapbox-gl-js/v1.9.0/mapbox-gl.css" rel="stylesheet" />
 <link rel="stylesheet" type="text/css" href="assets/css/styles.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui.min.css">
 <link rel="stylesheet" type="text/css" href="https://unpkg.com/botui/build/botui-theme-default.css">
-<!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.0.0-alpha.6/css/bootstrap.min.css"> -->
 <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" >
-<!-- <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-material-design/4.0.2/bootstrap-material-design.css"> -->
 <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
 <link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.6.3/css/all.css" integrity="sha384-UHRtZLI+pbxtHCWp1t77Bi1L4ZtiqrqD80Kn4Z8NTSRyMA2Fd33n5dQ8lWUE00s/" crossorigin="anonymous">
-
-
-
 <style>
 body { margin: 0; padding: 0; }
 #map { position: absolute; top: 0; bottom: 0; width: 100%; }
 </style>
-
 <!-- Mail Chimp integration -->
 <script id="mcjs">!function(c,h,i,m,p){m=c.createElement(h),p=c.getElementsByTagName(h)[0],m.async=1,m.src=i,p.parentNode.insertBefore(m,p)}(document,"script","https://chimpstatic.com/mcjs-connected/js/users/dd6851bcf491dd2d710030c75/6744a84fd5cace56fbf73bf8f.js");</script>
 <!-- end of Mail Chimp integration -->
 </head>
-
 <body>
+<!-- Exit Modal -->
+    <div class="modal fade " id="important-msg" tabindex="-1" role="dialog" aria-labelledby="important-msg-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+            <h4 class="modal-title" id="important-msg-label">Message Title!</h4>
+          </div>
+          <div class="modal-body">
+            <p>Message text</p>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            <button type="button" class="btn btn-primary" id="dont-show-again">Don't Show Again</button>
+          </div>
+        </div>
+      </div>
+    </div>
+<!-- end of exit modal -->
 <div id="map"></div>
-<pre id="info">Apiscore - V0.5e</pre>
 <nav id="menu"></nav>
 <div class='map-overlay' id='legend'></div>
 <div class="waiting"></div>
@@ -67,18 +78,13 @@ body { margin: 0; padding: 0; }
 </div>
 </div>
 <script>
-
 // Initiate animation on each ajax request
 $body = $("body");
 $(document).on({
     ajaxStart: function() { $body.addClass("loading");    },
     ajaxStop: function() { $body.removeClass("loading"); }    
 });
-
-
-
 const jsFrame = new JSFrame();
-
 function openModal() {
 const modalFrame = jsFrame.create({
       title: 'Bienvenue !',
@@ -91,28 +97,24 @@ const modalFrame = jsFrame.create({
         });
       }
   });
-//Show as a modal window
-
 modalFrame.showModal(_frame => {
   //Callback when modal window is closed.
 });
-//Place window in the center
 modalFrame.setPosition(window.innerWidth / 2, window.innerHeight / 2, 'CENTER_CENTER');
 modalFrame.requestFocus();
 var parentElement = jsFrame.windowManager.parentElement;
 parentElement.style.zIndex = "1000";
 };
 
-
 const frame = jsFrame.create({
     title: 'Statistiques sur 3 km',
     left: 20, top: 20, width: 600, height: 450,
     appearanceName: 'material',
-    movable: true,//Enable to be moved by mouse
-    resizable: true,//Enable to be resized by mouse
-    style: {//Style of the content.Can be specified just like inline style attribute.
-       backgroundColor: 'rgba(220,220,220,0.95)',//Ex.Background color of content(Opacity can be specified)
-       overflow: 'auto',//Ex.What to do when the drawing extends beyond the content area
+    movable: true,
+    resizable: true,
+    style: {
+       backgroundColor: 'rgba(220,220,220,0.95)',
+       overflow: 'auto',
     },
     appearanceParam: {
       border: {
@@ -135,30 +137,19 @@ const frame = jsFrame.create({
                   name: 'closeButton',
                   visible: true
               },
-/*              {
-                  fa: 'fas fa-expand-arrows-alt',
-                  name: 'maximizeButton',
-                  visible: true
-              },*/
               {
                   fa: 'fas fa-window-minimize',
                   name: 'minimizedButton',
                   visible: true
               },
               {
-                  fa: 'fas fa-window-minimize', // fa-compress-arrows-alt
+                  fa: 'fas fa-window-minimize',
                   name: 'deminimizeButton',
                   visible: false
-              }/*,
-              {
-                  fa: 'fas fa-compress-arrows-alt',
-                  name: 'demaximizeButton',
-                  visible: false
-              }*/
+              }
           ],
           buttonsOnLeft: [
               {
-                  //Set font-awesome fonts(https://fontawesome.com/icons?d=gallery&m=free)
                   fa: 'fas fa-bars',
                   name: 'menu',
                   visible: true,
@@ -171,25 +162,17 @@ const frame = jsFrame.create({
           ],
       },
   },
-
     html: '<canvas id="myChart" width="100%" height="70%" style="background-color: #ffffff00;"><p></p></canvas><canvas id="myLines" width="100%" height="70%" style="background-color: #ffffff00; display:none"><p></p></canvas>'
 }).show();
 frame.setControl({
                 styleDisplay:'inline',
-                //maximizeButton: 'maximizeButton',
                 minimizeButton: 'minimizedButton',
                 deminimizeButton: 'deminimizeButton',
-                //demaximizeButton: 'demaximizeButton',
                 hideButton: 'closeButton',
                 animation: true,
                 animationDuration: 150,
                 maximizeWithoutTitleBar: false
                 });
-
-/*frame.control.on('hid', (frame, info) => {
-                console.log(info)
-                frame.hide();
-            });*/
 $("[component-id=closeButton]").unbind("click");
 $("[component-id=closeButton]").attr("onclick", "");
 frame.on("closeButton", "click", (_frame, _evt) => {
@@ -197,10 +180,6 @@ frame.on("closeButton", "click", (_frame, _evt) => {
   $grbtn = $("#graph-circle");
   $grbtn.addClass("closed");
 });
-
-/*frame.control.on('demaximized', (frame, info) => {
-  console.log('minimize')
-});*/
 frame.on('menu', 'click', (_frame, evt, info) => {
             const name = evt.target.getAttribute('name');
 
@@ -213,7 +192,6 @@ frame.on('menu', 'click', (_frame, evt, info) => {
             }
         });
 
-// show graph again when clicked on graph button
 $("#graph-circle").click(function(){
   frame.show()
   $(this).removeClass("closed");
@@ -224,10 +202,7 @@ function showToast() {
       align: 'top', html: 'Sélectionnez une couche pour afficher les Statistiques',duration: 4000,
   });
 }
-
-// Initialize Pie Chart (for layers stats)
-
-var ctx = document.getElementById('myChart');
+var ctx = document.getElementById('myChart');// Initialize Pie Chart (for layers stats)
 var options = {
       responsive: true,
       tooltips: {
@@ -275,10 +250,7 @@ var pieGraph = new Chart(ctx, {
     data: chartdata,
     options: options
 });
-
-// Initialize Horizontal bar chart
-
-var ctx = document.getElementById('myLines');
+var ctx = document.getElementById('myLines');// Initialize Horizontal bar chart
 var HB_options = {
   responsive: true,
   scales: {
@@ -295,9 +267,8 @@ var HB_options = {
                           return 'moyen';
                         } else if (value == 300000) {
                           return 'elevé';
-                        }
-                          
-                    }
+                        }                          
+            }
         }
     }]
   },
@@ -323,17 +294,14 @@ var HbarGraph = new Chart(ctx, {
     data: HbarData,
     options: HB_options
 });
-
-
 // Variables for buffer zone around points and markers
-
 var buffer_options = {steps: 30, units: 'kilometers'};
 var buffer_radius = 3;
 var selectedMarker = [];
 var data_buffer = {};
 
 // setup mapbox content
-mapboxgl.accessToken = 'pk.eyJ1Ijoibm1hdHRvbiIsImEiOiJjazg3ZmwyYXYwcDFmM29vMDF3cWdsaGZ0In0.WoO5-JMw1ftWE-qbcTUEAA';
+mapboxgl.accessToken = 'pk.eyJ1Ijoibm1hdHRvbiIsImEiOiJja2wxMzRzc3MwY2FzMnFvNGJ6a2FvZmFhIn0.iZJi560O2CEzv-zaNlvYOg';
 var map = new mapboxgl.Map({
 container: 'map', // container id
 style: 'mapbox://styles/nmatton/ck87gtqj011g91iqgb3lcn0p8',
@@ -349,7 +317,6 @@ function addData(chart, label, data) {
     });
     chart.update();
 }
-
 function removeData(chart) {
     chart.data.labels= [];
     chart.data.datasets[0]["data"] = [];
@@ -359,7 +326,6 @@ function removeData(chart) {
 
 // Ajout cercle, calcul stats et MAJ pie chart au CLICK!
 map.on('click', function(e) {
-
 	// remove markers if already present on the map
 	if (selectedMarker!==null) {
 	  for (var i = selectedMarker.length - 1; i >= 0; i--) {
@@ -440,10 +406,8 @@ map.on('click', function(e) {
       }
   });
 }); // end of "click" event
-
 // Hacked trick to add non-3857 wms layer
 function createTexture(context, canvas) {
-
     let gl = context.gl;
     let texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
@@ -451,8 +415,6 @@ function createTexture(context, canvas) {
     gl.generateMipmap(gl.TEXTURE_2D);
     return texture;
   }
-
-
 map.on('load', function() {
  map.addSource('wms-picc_toponym', {
     'type': 'raster',
@@ -471,7 +433,6 @@ map.on('load', function() {
       'layout' : {'visibility': 'none'}
     }
   );
-
   //Set up dummy tile layer for listening tiles.
     map.addSource( "dummy-lifewatch", {
             'type': 'raster',
@@ -481,7 +442,6 @@ map.on('load', function() {
             'tileSize': 256,
             'attribution': '<a href="https://maps.elie.ucl.ac.be/lifewatch/ecotopes.html" target="_blank">© UCL-geomatics</a>'
             });
-
     map.addLayer(
                 {
                 'id':    "ecotopes",
@@ -490,13 +450,9 @@ map.on('load', function() {
                 'paint': {},
                 'layout' : {'visibility': 'none'}
                 }, 'toponymie');
-
   proj4.defs("EPSG:3812","+proj=lcc +lat_1=49.83333333333334 +lat_2=51.16666666666666 +lat_0=50.797815 +lon_0=4.359215833333333 +x_0=649328 +y_0=665262 +ellps=GRS80 +towgs84=0,0,0,0,0,0,0 +units=m +no_defs");  
   ol.proj.proj4.register(proj4);
-
-
 // Set up hidden ol map 
-
 let wmslayer = new ol.layer.Tile({
         source: new ol.source.TileWMS({
           url: 'https://maps.elie.ucl.ac.be/cgi-bin/mapserv72?map=/maps_server/lifewatch/mapfiles/v3.10/LW_Belgium_ecotopes_lc_raster.map&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=lccs&TILED=true&date_db=2015&WIDTH=256&HEIGHT=256&CRS=EPSG:3812&STYLES=',
@@ -504,7 +460,6 @@ let wmslayer = new ol.layer.Tile({
           projection: 'EPSG:3812'
         })
       });
-  
 let olmap = new ol.Map({
         layers: [wmslayer],
         target: 'hiddenolmap',
@@ -512,11 +467,6 @@ let olmap = new ol.Map({
           projection: 'EPSG:3857'
         })
       });
-
-
- 
-  // Listen dummy source to get tiles needed. 
-
   map.on('dataloading', function(tile) {
         if(tile.sourceId == "dummy-lifewatch" )
         { 
@@ -555,8 +505,6 @@ let olmap = new ol.Map({
       'layout' : {'visibility': 'none'}
     }
   );
-
-
   // Walous - occupation du sol
   map.addSource('wms-walous-ocu', {
     'type': 'raster',
@@ -576,27 +524,6 @@ let olmap = new ol.Map({
     },
     'parcelles agric.'
   );
-
-  // Walous - utilisation du sol
- /* map.addSource('wms-walous-uti', {
-    'type': 'raster',
-    'tiles': [
-    'https://geoservices.wallonie.be/arcgis/services/SOL_SOUS_SOL/WALOUS_UTILISATION_SOL/MapServer/WMSServer?SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&BBOX={bbox-epsg-3857}&CRS=EPSG:3857&WIDTH=256&HEIGHT=256&LAYERS=9&STYLES=&FORMAT=image/png&DPI=96&MAP_RESOLUTION=96&FORMAT_OPTIONS=dpi:96&TRANSPARENT=TRUE'
-    ],
-    'tileSize': 256
-  });
-  map.addLayer(
-    {
-      'id': 'utilisation du sol',
-      'type': 'raster',
-      'source': 'wms-walous-uti',
-      'paint': {},
-      'layout' : {'visibility': 'none'}
-    },
-    'occupation du sol'
-  );*/
-
-
   map.addSource('wms-picc_lignes', {
     'type': 'raster',
     'tiles': [
@@ -615,7 +542,6 @@ let olmap = new ol.Map({
     },
     'occupation du sol'
   );
-
   map.addSource('wms-ortho', {
     'type': 'raster',
     'tiles': [
@@ -634,7 +560,6 @@ let olmap = new ol.Map({
     },
     'haies'
   );
-
   // add internal source for creating circle around click position
 	map.addSource('circleData', {
 		type: 'geojson',
@@ -663,16 +588,11 @@ let olmap = new ol.Map({
       'line-width': 3
       },
   });
-
 }); // end of "load"
-
 var popup = new mapboxgl.Popup({
   closeButton: false,
   closeOnClick: false
 });
-
-// ----------  Sélection de la couche à afficher
-
 var toggleableLayerIds = ['ecotopes', 'occupation du sol', 'parcelles agric.' , 'orthophoto'];
 var legend = 'http://locla.be/apiscore/legend_lccs.png'
 var legends={ 
@@ -687,10 +607,8 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
   var id = toggleableLayerIds[i];
   var link = document.createElement('a');
   link.href = '#';
-  //if (id == 'ecotopes') {link.className = 'active';} else {link.className = '';} // required when choice is to enable default layer
   link.className = '';
   link.textContent = id;
-  // ajout du lien et action sur visibilité de la couche
   link.onclick = function(e) {
     var clickedLayer = this.textContent;
     e.preventDefault();
@@ -766,11 +684,28 @@ for (var i = 0; i < toggleableLayerIds.length; i++) {
   var layers = document.getElementById('menu');
   layers.appendChild(link);
 }
-
-
 map.addControl(new mapboxgl.NavigationControl());
 $(document).ready(openModal());
+// Start the DOM ready 
+jQuery( document ).ready( function( $ ) { 
+  $("html").mouseleave(function() { 
+  // Show Modal 
+  //CODE NEEDED FOR THE IMPORTANT MESSAGE MODAL POPUP
+            //Check to see if the cookie exists for the Don't show again option
+            if (!$.cookie('focusmsg')) {
+                //Launch the modal when you first visit the site            
+                $('#important-msg').modal('show');
+            }
+            //Don't show again mouse click
+            $("#dont-show-again").click( function() {
+                //Create a cookie that lasts 14 days
+                $.cookie('focusmsg', '1', { expires: 14 });     
+                $('#important-msg').modal('hide');      
+
+            }); //end the click function for don't show again
+
+  }); 
+});
 </script>
- 
-</body>
+ </body>
 </html>
