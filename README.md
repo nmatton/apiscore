@@ -50,7 +50,17 @@ All data used in the project are available on open access licenses.
 ## Ecotopes
 - source : https://maps.elie.ucl.ac.be/lifewatch/ecotopes.html
 - data format : vector
-- processing applied : none
-- WMS layer : https://maps.elie.ucl.ac.be/cgi-bin/mapserv72?map=/maps_server/lifewatch/mapfiles/v3.10/LW_Belgium_ecotopes_lc_raster.map&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=lccs&TILED=true&date_db=2015&WIDTH=256&HEIGHT=256&CRS=EPSG:3812&STYLES=
+- [WMS layer](https://maps.elie.ucl.ac.be/cgi-bin/mapserv72?map=/maps_server/lifewatch/mapfiles/v3.10/LW_Belgium_ecotopes_lc_raster.map&SERVICE=WMS&VERSION=1.3.0&REQUEST=GetMap&FORMAT=image%2Fpng&TRANSPARENT=true&LAYERS=lccs&TILED=true&date_db=2015&WIDTH=256&HEIGHT=256&CRS=EPSG:3812&STYLES=)
 
 Note that the WMS layer is only accessible on a Lambert Belge 2008 projection (EPSG 3812) while mapbox only accepts EPSG 3857 for the WMS layers. [See here](https://github.com/mapbox/mapbox-gl-js/issues/3184) for more details, but [the following example](https://jsfiddle.net/vw3oes9h/) was the actual solution
+
+## Land Cover
+- source : https://geoportail.wallonie.be/walous
+- data format : raster
+- [WMS layer link]()
+
+This layer was created in the frame of the Walous project. This inter-Universities research project used orthophotos of 2018 and ancillary data to produce high resolution land cover map for complete Waloon region.
+
+## Agricultural fields
+- source :
+- data format : vector
